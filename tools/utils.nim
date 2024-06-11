@@ -33,7 +33,7 @@ when not defined(glCustomLoader) and not defined(emscripten):
 
   let glHandle = loadLib(glDLL)
   if isNil(glHandle):
-    quit("could not load: " & gldll)
+    raise newException(LibraryError, "could not load: " & gldll)
 
   when defined(windows):
     var wglGetProcAddress = cast[proc (s: cstring): pointer {.stdcall.}](

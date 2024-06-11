@@ -99,7 +99,7 @@ proc genProcs(node: XmlNode) =
       glProc.rVal = glProc.rVal[0 ..< glProc.rval.len - glProc.name.len]
       while glProc.rVal.endsWith(" "):
         glProc.rVal = glProc.rVal[0 ..< glProc.rVal.len - 1]
-      glProc.rVal = glProc.rVal.translateType()
+      glProc.rVal = glProc.rVal.translateType().strip
 
       if glProc.name == "glGetTransformFeedbacki_v":
         continue
@@ -200,7 +200,11 @@ proc addDynamicProcs(output: var string) =
       if not output.endsWith("("):
         output.add(", ")
       output.add("{arg.name}: {arg.argType}".fmt)
-    output.add("): {glProc.rVal} {{.stdcall.}}\n".fmt)
+    if glProc.rVal == "void":
+      output.add(&")")
+    else:
+      output.add("): {glProc.rVal}".fmt)
+    output.add(" {.stdcall.}\n")
 
 proc addEnums(output: var string) =
   echo "Adding Enums..."
@@ -224,7 +228,11 @@ proc addLoader(output: var string, number: string, features: seq[GLProc]) =
       if not output.endsWith("("):
         output.add(", ")
       output.add("{arg.name}: {arg.argType}".fmt)
-    output.add("): {glProc.rVal} {{.stdcall.}}](glGetProc(\"{glProc.name}\"))\n".fmt)
+    if glProc.rVal == "void":
+      output.add(&")")
+    else:
+      output.add("): {glProc.rVal}".fmt)
+    output.add(" {{.stdcall.}}](glGetProc(\"{glProc.name}\"))\n".fmt)
 
 proc addExtensions(output: var string, node: XmlNode) =
   echo "Adding Extensions..."
@@ -255,7 +263,11 @@ proc addExtensions(output: var string, node: XmlNode) =
           if not output.endsWith("("):
             output.add(", ")
           output.add("{arg.name}: {arg.argType}".fmt)
-        output.add("): {glProc.rVal} {{.stdcall.}}](glGetProc(\"{glProc.name}\"))\n".fmt)
+        if glProc.rVal == "void":
+          output.add(&")")
+        else:
+          output.add("): {glProc.rVal}".fmt)
+        output.add(" {{.stdcall.}}](glGetProc(\"{glProc.name}\"))\n".fmt)
 
 proc main() =
   if not os.fileExists("gl.xml"):
@@ -323,7 +335,7 @@ proc main() =
   dynamicOutput = indent(dynamicOutput, 2)
   output.add(dynamicOutput)
 
-  writeFile("src/opengl.nim", output)
+  writeFile("../src/opengl.nim", output)
 
 if isMainModule:
   main()

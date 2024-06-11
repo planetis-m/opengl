@@ -97,9 +97,7 @@ proc genProcs(node: XmlNode) =
       glProc.name = command.child("proto").child("name").innerText
       glProc.rVal = command.child("proto").innerText
       glProc.rVal = glProc.rVal[0 ..< glProc.rval.len - glProc.name.len]
-      while glProc.rVal.endsWith(" "):
-        glProc.rVal = glProc.rVal[0 ..< glProc.rVal.len - 1]
-      glProc.rVal = glProc.rVal.translateType().strip
+      glProc.rVal = glProc.rVal.translateType().strip(leading=false)
 
       if glProc.name == "glGetTransformFeedbacki_v":
         continue
@@ -335,7 +333,7 @@ proc main() =
   dynamicOutput = indent(dynamicOutput, 2)
   output.add(dynamicOutput)
 
-  writeFile("../src/opengl.nim", output)
+  writeFile("src/opengl.nim", output)
 
 if isMainModule:
   main()
